@@ -1,0 +1,72 @@
+swagger: '2.0'
+info:
+  description: PromoManger API
+  version: 1.0.0
+  title: PromoManager API
+  contact:
+    email: godoy.lucas.e@gmail.com
+
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+
+# tags are used for organizing operations
+tags:
+- name: promoCrud
+  description: CRUD operations on Promotions
+- name: promoManagement
+  description: Manages promotions
+
+paths:
+  /promo:
+    post:
+      tags:
+      - promoCrud
+      summary: creates a new promotion
+      operationId: createPromotion
+      description: |
+        Creates a new promotion with specific features
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: checkInBean
+        description: object that contains the info to check in users onto tables
+        schema:
+          $ref: '#/definitions/PromoBean'
+      responses:
+        201:
+          description: search results matching criteria
+        400:
+          description: bad input parameter
+        409:
+          description: promoCode already created
+definitions:
+  PromoBean:
+    type: object
+    required:
+    - name
+    - description
+    - promoCode
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      promoCode:
+        type: string
+      startDate:
+        type: string
+        format: date-time
+      endDate:
+        type: string
+        format: date-time
+# Added by API Auto Mocking Plugin
+host: virtserver.swaggerhub.com
+basePath: /promoManager/v1
+schemes:
+ - https
+ - http

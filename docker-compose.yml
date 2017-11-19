@@ -1,0 +1,22 @@
+version: '2.1'
+
+services:
+    promo-manager:
+        container_name: promo-manager
+        hostname: promo-manager
+        image: dev-it/promo-manager:latest
+        expose:
+            - 8081
+        ports:
+            - 8081:8081
+        networks:
+            - devit-network
+        environment:
+            - spring.profiles.active=docker
+        links:
+            - mongodb:mongodb
+        depends_on:
+            - mongodb
+        logging:
+            driver: json-file
+

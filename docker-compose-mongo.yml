@@ -1,0 +1,24 @@
+version: '2.1'
+
+services:
+    mongodb:
+        hostname: mongodb
+        container_name: mongodb
+        image: bitnami/mongodb:latest
+        expose:
+            - 27017
+        ports:
+            - 27017:27017
+        volumes:
+            - /tmp/data/db:/data/db
+        environment:
+              - MONGODB_USERNAME=promoManager
+              - MONGODB_PASSWORD=password
+              - MONGODB_DATABASE=promoManager
+              - MONGODB_ROOT_PASSWORD=password
+        networks:
+            - devit-network
+
+networks:
+    devit-network:
+        driver: bridge

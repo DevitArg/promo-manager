@@ -1,0 +1,6 @@
+mongo:
+  config:
+    type: EMBEDDED
+
+server:
+  contextPath: /promoManager/v1
