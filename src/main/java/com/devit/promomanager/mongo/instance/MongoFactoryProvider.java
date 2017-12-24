@@ -1,6 +1,6 @@
 package com.devit.promomanager.mongo.instance;
 
-import com.devit.checkmein.configuration.mongo.MongoConfigurationProperties;
+import com.devit.promomanager.mongo.MongoConfigurationProperties;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
 import org.springframework.beans.factory.annotation.Autowired;

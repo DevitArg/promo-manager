@@ -31,13 +31,15 @@ paths:
       - application/json
       parameters:
       - in: body
-        name: checkInBean
-        description: object that contains the info to check in users onto tables
+        name: promoBean
+        description: object that contains the info to create a new promotion
         schema:
           $ref: '#/definitions/PromoBean'
       responses:
         201:
           description: search results matching criteria
+          schema:
+            $ref: '#/definitions/PromoBean'
         400:
           description: bad input parameter
         409:
@@ -58,15 +60,17 @@ definitions:
         type: string
       promoCode:
         type: string
-      startDate:
+      begins:
         type: string
         format: date-time
-      endDate:
+      expires:
         type: string
         format: date-time
 # Added by API Auto Mocking Plugin
 host: virtserver.swaggerhub.com
-basePath: /promoManager/v1
+# basePath: /promoManager/v1
 schemes:
  - https
  - http
+# Added by API Auto Mocking Plugin
+basePath: /promoManager/v1

@@ -1,7 +1,7 @@
 package com.devit.promomanager.mongo.instance;
 
-import com.devit.checkmein.configuration.mongo.MongoTemplateFactory;
-import com.devit.checkmein.configuration.mongo.MongoType;
+import com.devit.promomanager.mongo.MongoTemplateFactory;
+import com.devit.promomanager.mongo.MongoType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;

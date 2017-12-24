@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -103,6 +103,14 @@
             <version>2.9.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-joda</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -139,8 +147,9 @@
                             <inputSpec>src/main/resources/swagger.yaml</inputSpec>
                             <ignoreFileOverride>src/main/resources/.swagger-codegen-ignore</ignoreFileOverride>
                             <language>spring</language>
-                            <apiPackage>com.devit.checkmein.api</apiPackage>
-                            <modelPackage>com.devit.checkmein.api.model</modelPackage>
+                            <generateModels>false</generateModels>
+                            <apiPackage>com.devit.promomanager.api</apiPackage>
+                            <modelPackage>com.devit.promomanager.api.model</modelPackage>
                             <configOptions>
                                 <sourceFolder>src/gen/java/main</sourceFolder>
                             </configOptions>
