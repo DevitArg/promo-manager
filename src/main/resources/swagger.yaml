@@ -66,6 +66,15 @@ definitions:
       expires:
         type: string
         format: date-time
+  ErrorResponse:
+    type: object
+    properties:
+      httpStatus:
+        type: integer
+      message:
+        type: string
+      developerMessage:
+        type: string
 # Added by API Auto Mocking Plugin
 host: virtserver.swaggerhub.com
 # basePath: /promoManager/v1

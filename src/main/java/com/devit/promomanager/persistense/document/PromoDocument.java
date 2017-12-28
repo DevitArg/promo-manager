@@ -2,9 +2,10 @@ package com.devit.promomanager.persistense.document;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.joda.time.LocalDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.LocalDateTime;
 
 
 /**
@@ -21,8 +22,8 @@ public class PromoDocument {
 	@Indexed
 	private String promoCode;
 	@Indexed
-	private LocalDate begins;
+	private LocalDateTime begins;
 	@Indexed
-	private LocalDate expires;
+	private LocalDateTime expires;
 
 }

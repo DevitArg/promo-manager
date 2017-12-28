@@ -1,0 +1,3 @@
+mongo:
+  config:
+    type: EMBEDDED

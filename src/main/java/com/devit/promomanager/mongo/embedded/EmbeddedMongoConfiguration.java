@@ -20,30 +20,30 @@ import de.flapdoodle.embed.process.extract.UserTempNaming;
  */
 public class EmbeddedMongoConfiguration {
 
-	private static MongoClient mongoClient;
+    private static MongoClient mongoClient;
 
-	public synchronized static MongoClient getMongoClient() throws Exception {
+    public synchronized static MongoClient getMongoClient() throws Exception {
 
-		final Command command = Command.MongoD;
+        final Command command = Command.MongoD;
 
-		final IFeatureAwareVersion version = de.flapdoodle.embed.mongo.distribution.Version.V3_3_1;
+        final IFeatureAwareVersion version = de.flapdoodle.embed.mongo.distribution.Version.V3_3_1;
 
-		if (mongoClient == null) {
-			final MongodStarter runtime = MongodStarter.getInstance(new RuntimeConfigBuilder().defaults(command)
-					.artifactStore(new ExtractedArtifactStoreBuilder()
-							.defaults(command)
-							.download(new DownloadConfigBuilder()
-									.defaultsForCommand(command).build())
-							.executableNaming(new UserTempNaming()))
-					.build());
-			MongodExecutable mongodExecutable = runtime.prepare(new MongodConfigBuilder().version(version).build());
-			MongodProcess mongod = mongodExecutable.start();
-			mongoClient = new MongoClient(new ServerAddress(mongod.getConfig().net().getServerAddress(),
-					mongod.getConfig().net().getPort()));
+        if (mongoClient == null) {
+            final MongodStarter runtime = MongodStarter.getInstance(new RuntimeConfigBuilder().defaults(command)
+                    .artifactStore(new ExtractedArtifactStoreBuilder()
+                            .defaults(command)
+                            .download(new DownloadConfigBuilder()
+                                    .defaultsForCommand(command).build())
+                            .executableNaming(new UserTempNaming()))
+                    .build());
+            MongodExecutable mongodExecutable = runtime.prepare(new MongodConfigBuilder().version(version).build());
+            MongodProcess mongod = mongodExecutable.start();
+            mongoClient = new MongoClient(new ServerAddress(mongod.getConfig().net().getServerAddress(),
+                    mongod.getConfig().net().getPort()));
 
-		}
+        }
 
-		return mongoClient;
-	}
+        return mongoClient;
+    }
 
 }

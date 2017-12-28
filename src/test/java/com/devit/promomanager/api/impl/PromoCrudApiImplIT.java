@@ -1,15 +1,16 @@
 package com.devit.promomanager.api.impl;
 
 import com.devit.promomanager.AbstractIT;
-import com.devit.promomanager.api.handler.ApiError;
+import com.devit.promomanager.api.model.ErrorResponse;
 import com.devit.promomanager.api.model.PromoBean;
 import com.devit.promomanager.persistense.document.PromoDocument;
 import com.devit.promomanager.persistense.repository.PromoRepository;
 import org.dozer.DozerBeanMapper;
-import org.joda.time.LocalDate;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+
+import java.time.LocalDateTime;
 
 import static com.jayway.restassured.RestAssured.given;
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
@@ -19,7 +20,7 @@ import static org.hamcrest.Matchers.equalTo;
 /**
  * @author Lucas.Godoy on 21/11/17.
  */
-public class PromoApiImplIT extends AbstractIT {
+public class PromoCrudApiImplIT extends AbstractIT {
 
 	private static final String BASE_PATH = "/promoManager/v1";
 	private static final String PROMO_API_PATH = BASE_PATH + "/promo";
@@ -64,17 +65,17 @@ public class PromoApiImplIT extends AbstractIT {
 		PromoBean requestBody = buildValidBrandNewPromoBean();
 		promoRepository.save(dozerBeanMapper.map(requestBody, PromoDocument.class));
 
-		ApiError apiError =
+		ErrorResponse errorResponse =
 				given().log().all()
 						.body(requestBody)
 						.when()
 						.post(PROMO_API_PATH)
 						.then()
 						.statusCode(equalTo(HttpStatus.CONFLICT.value()))
-						.extract().body().as(ApiError.class);
+						.extract().body().as(ErrorResponse.class);
 
-		assertThat(apiError).isNotNull();
-		assertThat(apiError.getMessage()).containsIgnoringCase(String.format("The promo with promoCode: %s already exists"
+		assertThat(errorResponse).isNotNull();
+		assertThat(errorResponse.getMessage()).containsIgnoringCase(String.format("The promo with promoCode: %s already exists"
 				, requestBody.getPromoCode()));
 	}
 
@@ -84,7 +85,7 @@ public class PromoApiImplIT extends AbstractIT {
 
 	private PromoBean buildPromoBean(String... excludedFields) {
 		PromoBean random = random(PromoBean.class, excludedFields);
-		LocalDate startDate = new LocalDate();
+		LocalDateTime startDate = LocalDateTime.now();
 		random.setBegins(startDate);
 		random.setExpires(startDate.plusDays(10));
 		return random;

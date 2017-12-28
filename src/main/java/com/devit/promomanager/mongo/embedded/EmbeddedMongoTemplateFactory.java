@@ -12,13 +12,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class EmbeddedMongoTemplateFactory implements MongoTemplateFactory {
 
-	@Override
-	public boolean supports(MongoType mongoType) {
-		return MongoType.EMBEDDED.equals(mongoType);
-	}
+    @Override
+    public boolean supports(MongoType mongoType) {
+        return MongoType.EMBEDDED.equals(mongoType);
+    }
 
-	@Override
-	public MongoTemplate mongoTemplate() throws Exception {
-		return new MongoTemplate(EmbeddedMongoConfiguration.getMongoClient(), "test");
-	}
+    @Override
+    public MongoTemplate mongoTemplate() throws Exception {
+        return new MongoTemplate(EmbeddedMongoConfiguration.getMongoClient(), "test");
+    }
 }

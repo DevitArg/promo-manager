@@ -1,6 +1,16 @@
 mongo:
   config:
-    type: EMBEDDED
+    replicaSetName:
+    type: INSTANCE
+    connectTimeout: 3000
+    socketTimeout: 3000
+    serverTimeout: 3000
+    retry:
+      retryBackOffTime: 5000
+      retryMaxAttempts: 3
 
 server:
-  contextPath: /promoManager/v1
+  port: 8081
+
+cxf:
+  path: /promoManager/v1

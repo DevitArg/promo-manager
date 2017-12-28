@@ -12,16 +12,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class MongoInstanceTemplateFactory implements MongoTemplateFactory {
 
-	@Autowired
-	private MongoFactoryProvider mongoFactoryProvider;
+    @Autowired
+    private MongoFactoryProvider mongoFactoryProvider;
 
-	@Override
-	public boolean supports(MongoType mongoType) {
-		return MongoType.INSTANCE.equals(mongoType);
-	}
+    @Override
+    public boolean supports(MongoType mongoType) {
+        return MongoType.INSTANCE.equals(mongoType);
+    }
 
-	@Override
-	public MongoTemplate mongoTemplate() throws Exception {
-		return new MongoTemplate(mongoFactoryProvider.getMongoFactory());
-	}
+    @Override
+    public MongoTemplate mongoTemplate() throws Exception {
+        return new MongoTemplate(mongoFactoryProvider.getMongoFactory());
+    }
 }

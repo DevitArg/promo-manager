@@ -12,19 +12,19 @@ import java.util.List;
 @Component
 public class MongoTemplateProvider {
 
-	@Autowired
-	private MongoConfigurationProperties mongoConfigurationProperties;
+    @Autowired
+    private MongoConfigurationProperties mongoConfigurationProperties;
 
-	@Autowired
-	private List<MongoTemplateFactory> mongoTemplateFactories;
+    @Autowired
+    private List<MongoTemplateFactory> mongoTemplateFactories;
 
-	public MongoTemplate getMongoTemplate() throws Exception {
-		MongoTemplateFactory mongoTemplateFactory = mongoTemplateFactories
-				.parallelStream()
-				.filter(factory -> factory.supports(mongoConfigurationProperties.getType()))
-				.findFirst()
-				.orElseThrow(IllegalArgumentException::new);
+    public MongoTemplate getMongoTemplate() throws Exception {
+        MongoTemplateFactory mongoTemplateFactory = mongoTemplateFactories
+                .parallelStream()
+                .filter(factory -> factory.supports(mongoConfigurationProperties.getType()))
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
 
-		return mongoTemplateFactory.mongoTemplate();
-	}
+        return mongoTemplateFactory.mongoTemplate();
+    }
 }
