@@ -2,6 +2,9 @@ package com.devit.promomanager.api.impl;
 
 import com.devit.promomanager.api.PromoCrudApi;
 import com.devit.promomanager.api.model.PromoBean;
+import com.devit.promomanager.exception.InvalidDatesException;
+import com.devit.promomanager.exception.NullPromoBeanException;
+import com.devit.promomanager.exception.PromoCodeRegisteredException;
 import com.devit.promomanager.service.PromoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,10 +23,13 @@ public class PromoCrudApiImpl implements PromoCrudApi {
 
 	@Override
 	public Response createPromotion(PromoBean promoBean) {
-		PromoBean responseBean = promoService.createPromotion(promoBean);
-		return Response
-				.status(Response.Status.CREATED)
-				.entity(responseBean)
-				.build();
+		try {
+			return Response
+					.status(Response.Status.CREATED)
+					.entity(promoService.createPromotion(promoBean))
+					.build();
+		} catch (InvalidDatesException | NullPromoBeanException | PromoCodeRegisteredException e) {
+			throw e.throwRestException();
+		}
 	}
 }

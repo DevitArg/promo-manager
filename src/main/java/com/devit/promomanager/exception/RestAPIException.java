@@ -10,7 +10,7 @@ import javax.ws.rs.core.Response;
 /**
  * @author Lucas.Godoy on 11/12/17.
  */
-public abstract class RestAPIException {
+public abstract class RestAPIException extends Exception{
 
 	@Setter
 	@Getter
