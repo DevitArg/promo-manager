@@ -1,6 +1,7 @@
 package com.devit.promomanager.service.impl;
 
 import com.devit.promomanager.api.model.PromoBean;
+import com.devit.promomanager.exception.NullPromoBeanException;
 import com.devit.promomanager.exception.PromoCodeRegisteredException;
 import com.devit.promomanager.persistense.document.PromoDocument;
 import com.devit.promomanager.persistense.repository.PromoRepository;
@@ -24,7 +25,7 @@ public class PromoServiceImpl implements PromoService {
 	@Override
 	public PromoBean createPromotion(PromoBean promoBean) {
 		if (promoBean == null) {
-			throw new IllegalArgumentException("PromoBean must not be null");
+			throw (new NullPromoBeanException()).throwRestException();
 		}
 		if (isPromoCodeRegistered(promoBean.getPromoCode())) {
 			throw (new PromoCodeRegisteredException(promoBean.getPromoCode())).throwRestException();

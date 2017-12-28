@@ -42,8 +42,12 @@ paths:
             $ref: '#/definitions/PromoBean'
         400:
           description: bad input parameter
+          schema:
+            $ref: '#/definitions/ErrorResponse'
         409:
           description: promoCode already created
+          schema:
+            $ref: '#/definitions/ErrorResponse'
 definitions:
   PromoBean:
     type: object

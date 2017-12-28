@@ -10,8 +10,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
-import java.time.LocalDateTime;
-
 import static com.jayway.restassured.RestAssured.given;
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,21 +41,61 @@ public class PromoCrudApiImplIT extends AbstractIT {
 				.statusCode(equalTo(HttpStatus.CREATED.value()))
 				.extract().body().as(PromoBean.class);
 
+		PromoDocument promoDocument = promoRepository.findOne(responseBody.getId());
+
 		assertThat(responseBody)
 				.isNotNull()
 				.isEqualToComparingOnlyGivenFields(requestBody,
 						"name", "description", "promoCode", "begins", "expires");
+
+		assertThat(responseBody)
+				.isNotNull()
+				.isEqualToComparingOnlyGivenFields(promoDocument,
+						"id", "name", "description", "promoCode", "begins", "expires");
 	}
 
 	@Test
 	public void createPromotionNullNameFailure_test() {
-		PromoBean requestBody = buildPromoBean("id", "name", "begins", "expires");
-		given()
-				.body(requestBody)
+		requestNoNullableFieldValidation("name");
+	}
+
+	@Test
+	public void createPromotionNullDescriptionFailure_test() {
+		requestNoNullableFieldValidation("description");
+	}
+
+	@Test
+	public void createPromotionNullPromoCodeFailure_test() {
+		requestNoNullableFieldValidation("promoCode");
+	}
+
+	@Test
+	public void createPromoWithNullBody() {
+		 given()
+				.body("")
 				.when()
 				.post(PROMO_API_PATH)
-				.then()
+				.then().log().body(true)
 				.statusCode(equalTo(HttpStatus.BAD_REQUEST.value()));
+	}
+
+	private void requestNoNullableFieldValidation(String fieldToBeNull) {
+		PromoBean requestBody = buildPromoBean(fieldToBeNull);
+		ErrorResponse errorResponse = createPromoWithNotNullableField(requestBody);
+
+		assertThat(errorResponse).isNotNull();
+		assertThat(errorResponse.getMessage()).containsIgnoringCase(
+				String.format("(PromoBean).%s: may not be null", fieldToBeNull));
+	}
+
+	private ErrorResponse createPromoWithNotNullableField(PromoBean wrongBean) {
+		return given()
+				.body(wrongBean)
+				.when()
+				.post(PROMO_API_PATH)
+				.then().log().body(true)
+				.statusCode(equalTo(HttpStatus.BAD_REQUEST.value()))
+				.extract().body().as(ErrorResponse.class);
 	}
 
 	@Test
@@ -66,7 +104,7 @@ public class PromoCrudApiImplIT extends AbstractIT {
 		promoRepository.save(dozerBeanMapper.map(requestBody, PromoDocument.class));
 
 		ErrorResponse errorResponse =
-				given().log().all()
+				given()
 						.body(requestBody)
 						.when()
 						.post(PROMO_API_PATH)
@@ -80,14 +118,16 @@ public class PromoCrudApiImplIT extends AbstractIT {
 	}
 
 	private PromoBean buildValidBrandNewPromoBean() {
-		return buildPromoBean("id", "begins", "expires");
+		return buildPromoBean("id");
 	}
 
 	private PromoBean buildPromoBean(String... excludedFields) {
 		PromoBean random = random(PromoBean.class, excludedFields);
-		LocalDateTime startDate = LocalDateTime.now();
-		random.setBegins(startDate);
-		random.setExpires(startDate.plusDays(10));
+
+		if (random.getBegins() != null) {
+			random.setExpires(random.getBegins().plusDays(10));
+		}
+
 		return random;
 	}
 
