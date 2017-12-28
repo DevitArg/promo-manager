@@ -16,19 +16,19 @@ import java.net.UnknownHostException;
 @Component
 public class MongoFactoryProvider {
 
-    @Autowired
-    private MongoConfigurationProperties mongoConfigurationProperties;
+	@Autowired
+	private MongoConfigurationProperties mongoConfigurationProperties;
 
-    public SimpleMongoDbFactory getMongoFactory() throws UnknownHostException {
-        MongoClientOptions.Builder optionsBuilder = MongoClientOptions.builder();
-        optionsBuilder.connectTimeout(300);
-        optionsBuilder.socketTimeout(300);
-        optionsBuilder.serverSelectionTimeout(300);
-        if (!StringUtils.isEmpty(mongoConfigurationProperties.getReplicaSetName())) {
-            optionsBuilder.requiredReplicaSetName(mongoConfigurationProperties.getReplicaSetName());
-        }
-        MongoClientURI mongoClientURI = new MongoClientURI(mongoConfigurationProperties.getUri(), optionsBuilder);
-        return new SimpleMongoDbFactory(mongoClientURI);
-    }
+	public SimpleMongoDbFactory getMongoFactory() throws UnknownHostException {
+		MongoClientOptions.Builder optionsBuilder = MongoClientOptions.builder();
+		optionsBuilder.connectTimeout(300);
+		optionsBuilder.socketTimeout(300);
+		optionsBuilder.serverSelectionTimeout(300);
+		if (!StringUtils.isEmpty(mongoConfigurationProperties.getReplicaSetName())) {
+			optionsBuilder.requiredReplicaSetName(mongoConfigurationProperties.getReplicaSetName());
+		}
+		MongoClientURI mongoClientURI = new MongoClientURI(mongoConfigurationProperties.getUri(), optionsBuilder);
+		return new SimpleMongoDbFactory(mongoClientURI);
+	}
 
 }

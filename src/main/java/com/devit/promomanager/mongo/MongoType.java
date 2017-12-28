@@ -5,6 +5,6 @@ package com.devit.promomanager.mongo;
  */
 public enum MongoType {
 
-    EMBEDDED, INSTANCE;
+	EMBEDDED, INSTANCE;
 
 }

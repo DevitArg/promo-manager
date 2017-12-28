@@ -1,13 +1,12 @@
 package com.devit.promomanager.service.impl;
 
 import com.devit.promomanager.api.model.PromoBean;
+import com.devit.promomanager.exception.PromoCodeRegisteredException;
 import com.devit.promomanager.persistense.document.PromoDocument;
 import com.devit.promomanager.persistense.repository.PromoRepository;
 import com.devit.promomanager.service.PromoService;
-import com.devit.promomanager.exception.PromoCodeRegisteredException;
 import org.dozer.DozerBeanMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 /**

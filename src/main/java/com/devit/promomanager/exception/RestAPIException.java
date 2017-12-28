@@ -12,9 +12,10 @@ import javax.ws.rs.core.Response;
  */
 public abstract class RestAPIException {
 
-	private WebApplicationException webApplicationException;
-	@Setter @Getter
+	@Setter
+	@Getter
 	protected ErrorResponse errorResponse;
+	private WebApplicationException webApplicationException;
 
 	public WebApplicationException throwRestException() {
 		Response.Status httpStatus = Response.Status.fromStatusCode(errorResponse.getHttpStatus());

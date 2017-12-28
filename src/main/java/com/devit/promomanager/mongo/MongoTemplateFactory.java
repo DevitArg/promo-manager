@@ -7,8 +7,8 @@ import org.springframework.data.mongodb.core.MongoTemplate;
  */
 public interface MongoTemplateFactory {
 
-    boolean supports(MongoType mongoType);
+	boolean supports(MongoType mongoType);
 
-    MongoTemplate mongoTemplate() throws Exception;
+	MongoTemplate mongoTemplate() throws Exception;
 
 }

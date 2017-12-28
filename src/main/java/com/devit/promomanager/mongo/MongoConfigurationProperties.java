@@ -14,8 +14,8 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 public class MongoConfigurationProperties {
 
-    private String uri;
-    private String replicaSetName;
-    private MongoType type;
+	private String uri;
+	private String replicaSetName;
+	private MongoType type;
 
 }

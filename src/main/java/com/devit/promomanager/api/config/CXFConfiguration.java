@@ -2,8 +2,6 @@ package com.devit.promomanager.api.config;
 
 import com.devit.promomanager.api.PromoCrudApi;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import org.apache.cxf.Bus;
 import org.apache.cxf.endpoint.Server;
@@ -16,7 +14,6 @@ import org.apache.cxf.validation.BeanValidationProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.ext.ContextResolver;
