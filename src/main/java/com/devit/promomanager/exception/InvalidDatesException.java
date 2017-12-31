@@ -6,10 +6,10 @@ import javax.ws.rs.core.Response;
 
 public class InvalidDatesException extends RestAPIException {
 
-	public InvalidDatesException() {
+	public InvalidDatesException(String message) {
 		super();
 		errorResponse = new ErrorResponse();
 		errorResponse.setHttpStatus(Response.Status.BAD_REQUEST.getStatusCode());
-		errorResponse.setMessage("Dates are wrong, check their values");
+		errorResponse.setMessage(message);
 	}
 }

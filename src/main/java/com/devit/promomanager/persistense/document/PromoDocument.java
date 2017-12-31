@@ -1,5 +1,6 @@
 package com.devit.promomanager.persistense.document;
 
+import com.devit.promomanager.api.model.PromoStatus;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -25,5 +26,7 @@ public class PromoDocument {
 	private LocalDateTime begins;
 	@Indexed
 	private LocalDateTime expires;
+	@Indexed
+	private PromoStatus status;
 
 }

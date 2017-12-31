@@ -3,12 +3,15 @@ package com.devit.promomanager.api.impl;
 import com.devit.promomanager.AbstractIT;
 import com.devit.promomanager.api.model.ErrorResponse;
 import com.devit.promomanager.api.model.PromoBean;
+import com.devit.promomanager.api.model.PromoStatus;
 import com.devit.promomanager.persistense.document.PromoDocument;
 import com.devit.promomanager.persistense.repository.PromoRepository;
 import org.dozer.DozerBeanMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+
+import java.time.LocalDateTime;
 
 import static com.jayway.restassured.RestAssured.given;
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
@@ -30,28 +33,15 @@ public class PromoCrudApiImplIT extends AbstractIT {
 	private DozerBeanMapper dozerBeanMapper;
 
 	@Test
-	public void createPromotionSuccessfully_test() {
+	public void createPromotionWithValidFieldsNonNullDates_test() {
 		PromoBean requestBody = buildValidBrandNewPromoBean();
+		requestAndVerifySuccessfulResponse(requestBody, PromoStatus.ACTIVE);
+	}
 
-		PromoBean responseBody = given()
-				.body(requestBody)
-				.when()
-				.post(PROMO_API_PATH)
-				.then()
-				.statusCode(equalTo(HttpStatus.CREATED.value()))
-				.extract().body().as(PromoBean.class);
-
-		PromoDocument promoDocument = promoRepository.findOne(responseBody.getId());
-
-		assertThat(responseBody)
-				.isNotNull()
-				.isEqualToComparingOnlyGivenFields(requestBody,
-						"name", "description", "promoCode", "begins", "expires");
-
-		assertThat(responseBody)
-				.isNotNull()
-				.isEqualToComparingOnlyGivenFields(promoDocument,
-						"id", "name", "description", "promoCode", "begins", "expires");
+	@Test
+	public void createPromotionWithValidFieldsNullDates_test() {
+		PromoBean requestBody = buildBrandNewPromoBeanFlexDates(null, null);
+		requestAndVerifySuccessfulResponse(requestBody, PromoStatus.INACTIVE);
 	}
 
 	@Test
@@ -70,32 +60,13 @@ public class PromoCrudApiImplIT extends AbstractIT {
 	}
 
 	@Test
-	public void createPromoWithNullBody() {
-		 given()
+	public void createPromoWithNullBodyFailure_test() {
+		given()
 				.body("")
 				.when()
 				.post(PROMO_API_PATH)
 				.then().log().body(true)
 				.statusCode(equalTo(HttpStatus.BAD_REQUEST.value()));
-	}
-
-	private void requestNoNullableFieldValidation(String fieldToBeNull) {
-		PromoBean requestBody = buildPromoBean(fieldToBeNull);
-		ErrorResponse errorResponse = createPromoWithNotNullableField(requestBody);
-
-		assertThat(errorResponse).isNotNull();
-		assertThat(errorResponse.getMessage()).containsIgnoringCase(
-				String.format("(PromoBean).%s: may not be null", fieldToBeNull));
-	}
-
-	private ErrorResponse createPromoWithNotNullableField(PromoBean wrongBean) {
-		return given()
-				.body(wrongBean)
-				.when()
-				.post(PROMO_API_PATH)
-				.then().log().body(true)
-				.statusCode(equalTo(HttpStatus.BAD_REQUEST.value()))
-				.extract().body().as(ErrorResponse.class);
 	}
 
 	@Test
@@ -117,8 +88,83 @@ public class PromoCrudApiImplIT extends AbstractIT {
 				, requestBody.getPromoCode()));
 	}
 
+	@Test
+	public void createPromotionWithInvalidDatesExpiryBeforeBeginningFailure_test() {
+		LocalDateTime begins = LocalDateTime.now();
+		LocalDateTime expires = begins.minusSeconds(1);
+		createPromotionWithInvalidDates(begins, expires, "Beginning date must be greater than expiry date");
+	}
+
+	@Test
+	public void createPromotionWithInvalidDatesNullExpiryFailure_test() {
+		LocalDateTime begins = LocalDateTime.now();
+		LocalDateTime expires = null;
+		createPromotionWithInvalidDates(begins, expires, "Either expiry date should be defined or beginning date should be blank");
+	}
+
+	@Test
+	public void createPromotionWithInvalidDatesNullBeginningFailure_test() {
+		LocalDateTime begins = null;
+		LocalDateTime expires = LocalDateTime.now();
+		createPromotionWithInvalidDates(begins, expires, "Either beginning date should be defined or expiry date should be blank");
+	}
+
+	private void createPromotionWithInvalidDates(LocalDateTime begins, LocalDateTime expires, String errorMessage) {
+		PromoBean requestBody = buildBrandNewPromoBeanFlexDates(begins, expires);
+		requestAndVerifyFailedBadRequest(requestBody, errorMessage);
+	}
+
+	private void requestAndVerifySuccessfulResponse(PromoBean requestBody, PromoStatus status) {
+		PromoBean responseBody = given()
+				.body(requestBody)
+				.when()
+				.post(PROMO_API_PATH)
+				.then()
+				.statusCode(equalTo(HttpStatus.CREATED.value()))
+				.extract().body().as(PromoBean.class);
+
+		PromoDocument promoDocument = promoRepository.findOne(responseBody.getId());
+
+		assertThat(responseBody)
+				.isNotNull()
+				.isEqualToComparingOnlyGivenFields(requestBody,
+						"name", "description", "promoCode", "begins", "expires");
+
+		assertThat(responseBody)
+				.isNotNull()
+				.isEqualToComparingOnlyGivenFields(promoDocument,
+						"id", "name", "description", "promoCode", "begins", "expires", "status");
+
+		assertThat(promoDocument.getStatus()).isEqualTo(status);
+	}
+
+	private void requestNoNullableFieldValidation(String fieldToBeNull) {
+		PromoBean requestBody = buildPromoBean(fieldToBeNull);
+		requestAndVerifyFailedBadRequest(requestBody, String.format("(PromoBean).%s: may not be null", fieldToBeNull));
+	}
+
+	private void requestAndVerifyFailedBadRequest(PromoBean wrongRequestBody, String errorMessage) {
+		ErrorResponse errorResponse = given()
+				.body(wrongRequestBody)
+				.when()
+				.post(PROMO_API_PATH)
+				.then().log().body(true)
+				.statusCode(equalTo(HttpStatus.BAD_REQUEST.value()))
+				.extract().body().as(ErrorResponse.class);
+
+		assertThat(errorResponse).isNotNull();
+		assertThat(errorResponse.getMessage()).containsIgnoringCase(errorMessage);
+	}
+
+	private PromoBean buildBrandNewPromoBeanFlexDates(LocalDateTime begins, LocalDateTime expires) {
+		PromoBean promoBean = buildValidBrandNewPromoBean();
+		promoBean.setBegins(begins);
+		promoBean.setExpires(expires);
+		return promoBean;
+	}
+
 	private PromoBean buildValidBrandNewPromoBean() {
-		return buildPromoBean("id");
+		return buildPromoBean("id", "status");
 	}
 
 	private PromoBean buildPromoBean(String... excludedFields) {

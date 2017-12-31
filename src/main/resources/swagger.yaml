@@ -70,6 +70,11 @@ definitions:
       expires:
         type: string
         format: date-time
+      status:
+        $ref: '#/definitions/PromoStatus'
+  PromoStatus:
+    type: string
+    enum: [ ACTIVE, INACTIVE, PAUSED, DELETED, CANCELLED ]
   ErrorResponse:
     type: object
     properties:
