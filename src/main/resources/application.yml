@@ -1,3 +1,14 @@
+spring:
+  kafka:
+    producer:
+      bootstrapServers: kafka:9092
+      acks: -1
+      compressionType: lz4
+      batchSize: 1
+      bufferMemory: 10485760
+      retries: 3
+      topic: promo_available
+
 mongo:
   config:
     replicaSetName:

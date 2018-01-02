@@ -6,12 +6,15 @@ import com.devit.promomanager.api.model.PromoBean;
 import com.devit.promomanager.api.model.PromoBeanAdapter;
 import com.devit.promomanager.api.model.PromoStatus;
 import com.devit.promomanager.exception.*;
+import com.devit.promomanager.kafka.KafkaConfiguration;
+import com.devit.promomanager.kafka.KafkaTopicProperties;
 import com.devit.promomanager.persistense.document.PromoDocument;
 import com.devit.promomanager.persistense.repository.PromoRepository;
 import com.devit.promomanager.service.PromoService;
 import com.devit.promomanager.service.activation.PromoActivationStrategyProvider;
 import org.dozer.DozerBeanMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -34,11 +37,21 @@ public class PromoServiceImpl implements PromoService {
 	@Autowired
 	private PromoActivationStrategyProvider activationStrategyProvider;
 
+	@Autowired
+	private KafkaTemplate kafkaTemplate;
+
+	@Autowired
+	private KafkaTopicProperties kafkaTopicProperties;
+
 	@Override
 	public PromoBean createPromotion(PromoBean promoBean) throws InvalidDatesException, NullPromoBeanException, PromoCodeRegisteredException {
 		PromoBeanAdapter promoBeanAdapter = promoBeanAdapterFactory.getPromoBeanAdapter(promoBean);
 		PromoDocument promoDocument = dozerBeanMapper.map(promoBeanAdapter.getPromoBean(), PromoDocument.class);
 		promoDocument = promoRepository.save(promoDocument);
+
+		if (PromoStatus.ACTIVE.equals(promoDocument.getStatus())) {
+			kafkaTemplate.send(kafkaTopicProperties.getTopic(), promoDocument);
+		}
 
 		return dozerBeanMapper.map(promoDocument, PromoBean.class);
 	}
@@ -54,7 +67,7 @@ public class PromoServiceImpl implements PromoService {
 			throw new PromoCodeAlreadyActiveException(promoDocument.getPromoCode());
 		}
 
-
+		kafkaTemplate.send(kafkaTopicProperties.getTopic(), promoDocument);
 	}
 
 }

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
 import static com.jayway.restassured.RestAssured.given;
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
@@ -34,38 +35,38 @@ public class PromoCrudApiImplIT extends AbstractIT {
 	private DozerBeanMapper dozerBeanMapper;
 
 	@Test
-	public void createPromotionWithValidFieldsNonNullDates_test() {
+	public void createPromotionWithValidFieldsNonNullDates_test() throws InterruptedException {
 		createActivePromotionWithValidFieldsNonNullDates();
 	}
 
-	private PromoBean createActivePromotionWithValidFieldsNonNullDates() {
+	private PromoBean createActivePromotionWithValidFieldsNonNullDates() throws InterruptedException {
 		PromoBean requestBody = buildValidBrandNewPromoBean();
-		return requestAndVerifySuccessfulResponse(requestBody, PromoStatus.ACTIVE);
+		return requestAndVerifyCreatePromoSuccessfulResponse(requestBody, PromoStatus.ACTIVE);
 	}
 
 	@Test
-	public void createPromotionWithValidFieldsNullDates_test() {
+	public void createPromotionWithValidFieldsNullDates_test() throws InterruptedException {
 		createInactivePromotionWithValidFieldsNullDates();
 	}
 
-	public PromoBean createInactivePromotionWithValidFieldsNullDates() {
+	public PromoBean createInactivePromotionWithValidFieldsNullDates() throws InterruptedException {
 		PromoBean requestBody = buildBrandNewPromoBeanFlexDates(null, null);
-		return requestAndVerifySuccessfulResponse(requestBody, PromoStatus.INACTIVE);
+		return requestAndVerifyCreatePromoSuccessfulResponse(requestBody, PromoStatus.INACTIVE);
 	}
 
 		@Test
 	public void createPromotionNullNameFailure_test() {
-		requestNoNullableFieldValidation("name");
+		requestCreatePromoWithNullFieldValidation("name");
 	}
 
 	@Test
 	public void createPromotionNullDescriptionFailure_test() {
-		requestNoNullableFieldValidation("description");
+		requestCreatePromoWithNullFieldValidation("description");
 	}
 
 	@Test
 	public void createPromotionNullPromoCodeFailure_test() {
-		requestNoNullableFieldValidation("promoCode");
+		requestCreatePromoWithNullFieldValidation("promoCode");
 	}
 
 	@Test
@@ -137,6 +138,8 @@ public class PromoCrudApiImplIT extends AbstractIT {
 		PromoDocument activatedPromo = promoRepository.findByPromoCode(activatePromoBean.getPromoCode())
 				.orElseThrow(() -> new Exception("wrong promoCode"));
 
+		verifyKafkaPublishedAvailablePromo(activatedPromo);
+
 		assertThat(activatedPromo.getBegins()).isEqualTo(activatePromoBean.getBegins());
 		assertThat(activatedPromo.getExpires()).isEqualTo(activatePromoBean.getExpires());
 		assertThat(activatedPromo.getStatus()).isEqualTo(PromoStatus.ACTIVE);
@@ -161,10 +164,11 @@ public class PromoCrudApiImplIT extends AbstractIT {
 
 		assertThat(errorResponse.getMessage())
 				.containsIgnoringCase(String.format("The promo with promoCode: %s is already with an ACTIVE status", activatePromoBean.getPromoCode()));
+		assertThat(records.poll(10L, TimeUnit.MILLISECONDS)).isNull();
 	}
 
 	@Test
-	public void activatePromotionWithInactiveStatusNullBeginningDateFailure_test() {
+	public void activatePromotionWithInactiveStatusNullBeginningDateFailure_test() throws InterruptedException {
 		PromoBean inactivePromo = createInactivePromotionWithValidFieldsNullDates();
 
 		ActivatePromoBean activatePromoBean = new ActivatePromoBean();
@@ -176,7 +180,7 @@ public class PromoCrudApiImplIT extends AbstractIT {
 	}
 
 	@Test
-	public void activatePromotionWithInactiveStatusNullExpiryDateFailure_test() {
+	public void activatePromotionWithInactiveStatusNullExpiryDateFailure_test() throws InterruptedException {
 		PromoBean inactivePromo = createInactivePromotionWithValidFieldsNullDates();
 
 		ActivatePromoBean activatePromoBean = new ActivatePromoBean();
@@ -188,7 +192,7 @@ public class PromoCrudApiImplIT extends AbstractIT {
 	}
 
 	@Test
-	public void activatePromotionWithInactiveStatusNullDatesFailure_test() {
+	public void activatePromotionWithInactiveStatusNullDatesFailure_test() throws InterruptedException {
 		PromoBean inactivePromo = createInactivePromotionWithValidFieldsNullDates();
 
 		ActivatePromoBean activatePromoBean = new ActivatePromoBean();
@@ -200,7 +204,7 @@ public class PromoCrudApiImplIT extends AbstractIT {
 	}
 
 	@Test
-	public void activatePromotionWithInactiveStatusBeginningAfterExpiryDateFailure_test() {
+	public void activatePromotionWithInactiveStatusBeginningAfterExpiryDateFailure_test() throws InterruptedException {
 		PromoBean inactivePromo = createInactivePromotionWithValidFieldsNullDates();
 
 		ActivatePromoBean activatePromoBean = new ActivatePromoBean();
@@ -211,7 +215,7 @@ public class PromoCrudApiImplIT extends AbstractIT {
 		activatePromotionBadRequest(activatePromoBean, "Dates must be specified and beginning date before expiry date");
 	}
 
-	private void activatePromotionBadRequest(ActivatePromoBean wrongActivatePromoBean, String errorMessage) {
+	private void activatePromotionBadRequest(ActivatePromoBean wrongActivatePromoBean, String errorMessage) throws InterruptedException {
 		ErrorResponse errorResponse = given()
 				.body(wrongActivatePromoBean)
 				.when()
@@ -221,14 +225,15 @@ public class PromoCrudApiImplIT extends AbstractIT {
 				.extract().body().as(ErrorResponse.class);
 
 		assertThat(errorResponse.getMessage()).containsIgnoringCase(errorMessage);
+		assertThat(records.poll(10L, TimeUnit.MILLISECONDS)).isNull();
 	}
 
 	private void createPromotionWithInvalidDates(LocalDateTime begins, LocalDateTime expires, String errorMessage) {
 		PromoBean requestBody = buildBrandNewPromoBeanFlexDates(begins, expires);
-		requestAndVerifyFailedBadRequest(requestBody, errorMessage);
+		requestAndVerifyCreatePromoFailedBadRequest(requestBody, errorMessage);
 	}
 
-	private PromoBean requestAndVerifySuccessfulResponse(PromoBean requestBody, PromoStatus status) {
+	private PromoBean requestAndVerifyCreatePromoSuccessfulResponse(PromoBean requestBody, PromoStatus status) throws InterruptedException {
 		PromoBean responseBody = given()
 				.body(requestBody)
 				.when()
@@ -250,16 +255,28 @@ public class PromoCrudApiImplIT extends AbstractIT {
 						"id", "name", "description", "promoCode", "begins", "expires", "status");
 
 		assertThat(promoDocument.getStatus()).isEqualTo(status);
+		verifyKafkaPublishedAvailablePromo(promoDocument);
 
 		return responseBody;
 	}
 
-	private void requestNoNullableFieldValidation(String fieldToBeNull) {
-		PromoBean requestBody = buildPromoBean(fieldToBeNull);
-		requestAndVerifyFailedBadRequest(requestBody, String.format("(PromoBean).%s: may not be null", fieldToBeNull));
+	private void verifyKafkaPublishedAvailablePromo(PromoDocument promoDocument) throws InterruptedException {
+		if (PromoStatus.ACTIVE.equals(promoDocument.getStatus())) {
+			PromoDocument polled = records.poll(5L, TimeUnit.SECONDS).value();
+
+			assertThat(promoDocument)
+					.isNotNull()
+					.isEqualToComparingOnlyGivenFields(polled,
+							"id", "name", "description", "promoCode", "begins", "expires", "status");
+		}
 	}
 
-	private void requestAndVerifyFailedBadRequest(PromoBean wrongRequestBody, String errorMessage) {
+	private void requestCreatePromoWithNullFieldValidation(String fieldToBeNull) {
+		PromoBean requestBody = buildPromoBean(fieldToBeNull);
+		requestAndVerifyCreatePromoFailedBadRequest(requestBody, String.format("(PromoBean).%s: may not be null", fieldToBeNull));
+	}
+
+	private void requestAndVerifyCreatePromoFailedBadRequest(PromoBean wrongRequestBody, String errorMessage) {
 		ErrorResponse errorResponse = given()
 				.body(wrongRequestBody)
 				.when()
