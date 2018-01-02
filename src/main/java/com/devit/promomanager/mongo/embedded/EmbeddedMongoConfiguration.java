@@ -12,6 +12,7 @@ import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
 import de.flapdoodle.embed.mongo.config.RuntimeConfigBuilder;
 import de.flapdoodle.embed.mongo.distribution.IFeatureAwareVersion;
 import de.flapdoodle.embed.process.extract.UserTempNaming;
+import org.springframework.core.env.Environment;
 
 /**
  * Class to provide an embedded mongo connection.
