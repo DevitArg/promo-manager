@@ -1,10 +1,9 @@
 package com.devit.promomanager.api.impl;
 
 import com.devit.promomanager.api.PromoCrudApi;
+import com.devit.promomanager.api.model.ActivatePromoBean;
 import com.devit.promomanager.api.model.PromoBean;
-import com.devit.promomanager.exception.InvalidDatesException;
-import com.devit.promomanager.exception.NullPromoBeanException;
-import com.devit.promomanager.exception.PromoCodeRegisteredException;
+import com.devit.promomanager.exception.*;
 import com.devit.promomanager.service.PromoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,6 +19,15 @@ public class PromoCrudApiImpl implements PromoCrudApi {
 	@Autowired
 	private PromoService promoService;
 
+	@Override
+	public Response activatePromotion(ActivatePromoBean activatePromoBean) {
+		try {
+			promoService.activatePromotion(activatePromoBean);
+			return Response.noContent().build();
+		} catch (NotFoundException | PromoCodeAlreadyActiveException | InvalidDatesException e) {
+			throw e.throwRestException();
+		}
+	}
 
 	@Override
 	public Response createPromotion(PromoBean promoBean) {

@@ -48,6 +48,32 @@ paths:
           description: promoCode already created
           schema:
             $ref: '#/definitions/ErrorResponse'
+    put:
+      tags:
+      - promoCrud
+      summary: activates an existing promotion
+      operationId: activatePromotion
+      description: |
+        Activates an existing promotion
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: activatePromoBean
+        description: object that contains the info to activate a promotion
+        schema:
+          $ref: '#/definitions/ActivatePromoBean'
+      responses:
+        204:
+          description: promotion updated with active status
+        404:
+          description: promotion has not been found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        409:
+          description: promotion is active already
+          schema:
+            $ref: '#/definitions/ErrorResponse'
 definitions:
   PromoBean:
     type: object
@@ -72,6 +98,19 @@ definitions:
         format: date-time
       status:
         $ref: '#/definitions/PromoStatus'
+  ActivatePromoBean:
+    type: object
+    required:
+    - promoCode
+    properties:
+      promoCode:
+        type: string
+      begins:
+        type: string
+        format: date-time
+      expires:
+        type: string
+        format: date-time
   PromoStatus:
     type: string
     enum: [ ACTIVE, INACTIVE, PAUSED, DELETED, CANCELLED ]

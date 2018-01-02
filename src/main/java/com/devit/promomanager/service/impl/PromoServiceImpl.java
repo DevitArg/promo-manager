@@ -1,17 +1,20 @@
 package com.devit.promomanager.service.impl;
 
 import com.devit.promomanager.PromoBeanAdapterFactory;
+import com.devit.promomanager.api.model.ActivatePromoBean;
 import com.devit.promomanager.api.model.PromoBean;
 import com.devit.promomanager.api.model.PromoBeanAdapter;
-import com.devit.promomanager.exception.InvalidDatesException;
-import com.devit.promomanager.exception.NullPromoBeanException;
-import com.devit.promomanager.exception.PromoCodeRegisteredException;
+import com.devit.promomanager.api.model.PromoStatus;
+import com.devit.promomanager.exception.*;
 import com.devit.promomanager.persistense.document.PromoDocument;
 import com.devit.promomanager.persistense.repository.PromoRepository;
 import com.devit.promomanager.service.PromoService;
+import com.devit.promomanager.service.activation.PromoActivationStrategyProvider;
 import org.dozer.DozerBeanMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /**
  * @author Lucas.Godoy on 21/11/17.
@@ -28,6 +31,9 @@ public class PromoServiceImpl implements PromoService {
 	@Autowired
 	private PromoBeanAdapterFactory promoBeanAdapterFactory;
 
+	@Autowired
+	private PromoActivationStrategyProvider activationStrategyProvider;
+
 	@Override
 	public PromoBean createPromotion(PromoBean promoBean) throws InvalidDatesException, NullPromoBeanException, PromoCodeRegisteredException {
 		PromoBeanAdapter promoBeanAdapter = promoBeanAdapterFactory.getPromoBeanAdapter(promoBean);
@@ -35,6 +41,20 @@ public class PromoServiceImpl implements PromoService {
 		promoDocument = promoRepository.save(promoDocument);
 
 		return dozerBeanMapper.map(promoDocument, PromoBean.class);
+	}
+
+	@Override
+	public void activatePromotion(ActivatePromoBean activatePromoBean) throws NotFoundException, PromoCodeAlreadyActiveException, InvalidDatesException {
+		PromoDocument promoDocument = promoRepository.findByPromoCode(activatePromoBean.getPromoCode())
+				.orElseThrow(() -> new NotFoundException("Provided promoCode has not been found it may not exist"));
+
+		if (!promoDocument.getStatus().equals(PromoStatus.ACTIVE)) {
+			activationStrategyProvider.activatePromo(promoDocument, activatePromoBean);
+		} else {
+			throw new PromoCodeAlreadyActiveException(promoDocument.getPromoCode());
+		}
+
+
 	}
 
 }
