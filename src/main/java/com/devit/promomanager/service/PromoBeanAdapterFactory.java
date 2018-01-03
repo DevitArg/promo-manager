@@ -1,4 +1,4 @@
-package com.devit.promomanager;
+package com.devit.promomanager.service;
 
 import com.devit.promomanager.api.model.PromoBean;
 import com.devit.promomanager.api.model.PromoBeanAdapter;
