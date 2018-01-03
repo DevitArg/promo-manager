@@ -5,6 +5,7 @@ import com.devit.promomanager.exception.InvalidDatesException;
 import com.devit.promomanager.exception.NotFoundException;
 import com.devit.promomanager.persistense.document.PromoDocument;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.retry.RetryCallback;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

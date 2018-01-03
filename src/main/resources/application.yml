@@ -16,7 +16,7 @@ mongo:
     connectTimeout: 3000
     socketTimeout: 3000
     serverTimeout: 3000
-    retry:
+    retryProperties:
       retryBackOffTime: 5000
       retryMaxAttempts: 3
 

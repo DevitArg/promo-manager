@@ -15,6 +15,8 @@ import com.devit.promomanager.service.activation.PromoActivationStrategyProvider
 import org.dozer.DozerBeanMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -43,11 +45,15 @@ public class PromoServiceImpl implements PromoService {
 	@Autowired
 	private KafkaTopicProperties kafkaTopicProperties;
 
+	@Autowired
+	private RetryTemplate retryTemplate;
+
 	@Override
 	public PromoBean createPromotion(PromoBean promoBean) throws InvalidDatesException, NullPromoBeanException, PromoCodeRegisteredException {
 		PromoBeanAdapter promoBeanAdapter = promoBeanAdapterFactory.getPromoBeanAdapter(promoBean);
 		PromoDocument promoDocument = dozerBeanMapper.map(promoBeanAdapter.getPromoBean(), PromoDocument.class);
-		promoDocument = promoRepository.save(promoDocument);
+
+		promoDocument = saveOrUpdatePromo(promoDocument);
 
 		if (PromoStatus.ACTIVE.equals(promoDocument.getStatus())) {
 			kafkaTemplate.send(kafkaTopicProperties.getTopic(), promoDocument);
@@ -70,4 +76,8 @@ public class PromoServiceImpl implements PromoService {
 		kafkaTemplate.send(kafkaTopicProperties.getTopic(), promoDocument);
 	}
 
+	private PromoDocument saveOrUpdatePromo(PromoDocument promoDocument) {
+		RetryCallback<PromoDocument, RuntimeException> retryCallback = context -> promoRepository.save(promoDocument);
+		return retryTemplate.execute(retryCallback);
+	}
 }

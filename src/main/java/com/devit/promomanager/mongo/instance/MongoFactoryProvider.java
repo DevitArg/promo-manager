@@ -21,9 +21,9 @@ public class MongoFactoryProvider {
 
 	public SimpleMongoDbFactory getMongoFactory() throws UnknownHostException {
 		MongoClientOptions.Builder optionsBuilder = MongoClientOptions.builder();
-		optionsBuilder.connectTimeout(300);
-		optionsBuilder.socketTimeout(300);
-		optionsBuilder.serverSelectionTimeout(300);
+		optionsBuilder.connectTimeout(mongoConfigurationProperties.getConnectTimeout());
+		optionsBuilder.socketTimeout(mongoConfigurationProperties.getSocketTimeout());
+		optionsBuilder.serverSelectionTimeout(mongoConfigurationProperties.getSocketTimeout());
 		if (!StringUtils.isEmpty(mongoConfigurationProperties.getReplicaSetName())) {
 			optionsBuilder.requiredReplicaSetName(mongoConfigurationProperties.getReplicaSetName());
 		}

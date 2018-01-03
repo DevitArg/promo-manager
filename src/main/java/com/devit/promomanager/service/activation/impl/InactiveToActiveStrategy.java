@@ -7,6 +7,8 @@ import com.devit.promomanager.persistense.document.PromoDocument;
 import com.devit.promomanager.persistense.repository.PromoRepository;
 import com.devit.promomanager.service.activation.PromoActivationStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,6 +16,9 @@ public class InactiveToActiveStrategy implements PromoActivationStrategy {
 
 	@Autowired
 	private PromoRepository promoRepository;
+
+	@Autowired
+	private RetryTemplate retryTemplate;
 
 	@Override
 	public boolean supports(PromoStatus oldStatus) {
@@ -32,8 +37,12 @@ public class InactiveToActiveStrategy implements PromoActivationStrategy {
 		promoDocument.setExpires(activatePromoBean.getExpires());
 		promoDocument.setStatus(PromoStatus.ACTIVE);
 
-		return promoRepository.save(promoDocument);
+		return saveOrUpdatePromo(promoDocument);
 	}
 
+	private PromoDocument saveOrUpdatePromo(PromoDocument promoDocument) {
+		RetryCallback<PromoDocument, RuntimeException> retryCallback = context -> promoRepository.save(promoDocument);
+		return retryTemplate.execute(retryCallback);
+	}
 
 }
