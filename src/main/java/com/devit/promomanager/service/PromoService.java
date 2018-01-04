@@ -9,7 +9,7 @@ import com.devit.promomanager.exception.*;
  */
 public interface PromoService {
 
-	PromoBean createPromotion(PromoBean promoBean) throws InvalidDatesException, NullPromoBeanException, PromoCodeRegisteredException;
+	PromoBean createPromotion(PromoBean promoBean) throws InvalidDatesException, NullPromoBeanException, PromoCodeRegisteredException, InvalidBusinessException;
 
 	void activatePromotion(ActivatePromoBean activatePromoBean) throws NotFoundException, PromoCodeAlreadyActiveException, InvalidDatesException;
 }

@@ -11,6 +11,6 @@ import java.util.Optional;
  */
 public interface PromoRepository extends MongoRepository<PromoDocument, String> {
 
-	Optional<PromoDocument> findByPromoCode(String promoCode);
+	Optional<PromoDocument> findByPromoCodeAndBusinessId(String promoCode, String businessId);
 
 }

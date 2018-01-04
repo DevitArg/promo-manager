@@ -18,6 +18,8 @@ import java.time.LocalDateTime;
 public class PromoDocument {
 
 	private String id;
+	@Indexed
+	private String businessId;
 	private String name;
 	private String description;
 	@Indexed

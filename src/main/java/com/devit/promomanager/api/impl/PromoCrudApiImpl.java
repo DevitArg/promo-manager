@@ -36,7 +36,7 @@ public class PromoCrudApiImpl implements PromoCrudApi {
 					.status(Response.Status.CREATED)
 					.entity(promoService.createPromotion(promoBean))
 					.build();
-		} catch (InvalidDatesException | NullPromoBeanException | PromoCodeRegisteredException e) {
+		} catch (InvalidDatesException | InvalidBusinessException | NullPromoBeanException | PromoCodeRegisteredException e) {
 			throw e.throwRestException();
 		}
 	}

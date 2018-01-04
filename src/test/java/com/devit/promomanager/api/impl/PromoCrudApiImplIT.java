@@ -54,7 +54,12 @@ public class PromoCrudApiImplIT extends AbstractIT {
 		return requestAndVerifyCreatePromoSuccessfulResponse(requestBody, PromoStatus.INACTIVE);
 	}
 
-		@Test
+	@Test
+	public void createPromotionNullBusinessIdFailure_test() {
+		requestCreatePromoWithNullFieldValidation("businessId");
+	}
+
+	@Test
 	public void createPromotionNullNameFailure_test() {
 		requestCreatePromoWithNullFieldValidation("name");
 	}
@@ -127,6 +132,7 @@ public class PromoCrudApiImplIT extends AbstractIT {
 		activatePromoBean.setPromoCode(inactivePromo.getPromoCode());
 		activatePromoBean.setBegins(LocalDateTime.now());
 		activatePromoBean.setExpires(LocalDateTime.now().plusDays(1));
+		activatePromoBean.setBusinessId(inactivePromo.getBusinessId());
 
 		given()
 				.body(activatePromoBean)
@@ -135,8 +141,8 @@ public class PromoCrudApiImplIT extends AbstractIT {
 				.then()
 				.statusCode(equalTo(HttpStatus.NO_CONTENT.value()));
 
-		PromoDocument activatedPromo = promoRepository.findByPromoCode(activatePromoBean.getPromoCode())
-				.orElseThrow(() -> new Exception("wrong promoCode"));
+		PromoDocument activatedPromo = promoRepository.findByPromoCodeAndBusinessId(activatePromoBean.getPromoCode(), activatePromoBean.getBusinessId())
+				.orElseThrow(() -> new Exception("wrong promoCode/businessId"));
 
 		verifyKafkaPublishedAvailablePromo(activatedPromo);
 
@@ -153,6 +159,7 @@ public class PromoCrudApiImplIT extends AbstractIT {
 		activatePromoBean.setPromoCode(activePromo.getPromoCode());
 		activatePromoBean.setBegins(LocalDateTime.now());
 		activatePromoBean.setExpires(LocalDateTime.now().plusDays(1));
+		activatePromoBean.setBusinessId(activePromo.getBusinessId());
 
 		ErrorResponse errorResponse = given()
 				.body(activatePromoBean)
@@ -168,6 +175,27 @@ public class PromoCrudApiImplIT extends AbstractIT {
 	}
 
 	@Test
+	public void activatePromotionWithWrongBusinessIdFailure_test() throws InterruptedException {
+		PromoBean inactivePromo = createInactivePromotionWithValidFieldsNullDates();
+
+		ActivatePromoBean activatePromoBean = new ActivatePromoBean();
+		activatePromoBean.setPromoCode(inactivePromo.getPromoCode());
+		activatePromoBean.setBegins(LocalDateTime.now());
+		activatePromoBean.setExpires(LocalDateTime.now().plusDays(1));
+		activatePromoBean.setBusinessId("whateverBusinessId");
+
+		ErrorResponse errorResponse = given()
+				.body(activatePromoBean)
+				.when()
+				.put(PROMO_API_PATH)
+				.then()
+				.statusCode(equalTo(HttpStatus.NOT_FOUND.value()))
+				.extract().body().as(ErrorResponse.class);
+
+		assertThat(errorResponse.getMessage()).containsIgnoringCase("Either the provided promoCode or businessId have not been found they may not exist");
+		assertThat(records.poll(10L, TimeUnit.MILLISECONDS)).isNull();	}
+
+	@Test
 	public void activatePromotionWithInactiveStatusNullBeginningDateFailure_test() throws InterruptedException {
 		PromoBean inactivePromo = createInactivePromotionWithValidFieldsNullDates();
 
@@ -175,6 +203,7 @@ public class PromoCrudApiImplIT extends AbstractIT {
 		activatePromoBean.setPromoCode(inactivePromo.getPromoCode());
 		activatePromoBean.setBegins(null);
 		activatePromoBean.setExpires(LocalDateTime.now());
+		activatePromoBean.setBusinessId(inactivePromo.getBusinessId());
 
 		activatePromotionBadRequest(activatePromoBean, "Dates must be specified and beginning date before expiry date");
 	}
@@ -187,6 +216,7 @@ public class PromoCrudApiImplIT extends AbstractIT {
 		activatePromoBean.setPromoCode(inactivePromo.getPromoCode());
 		activatePromoBean.setBegins(LocalDateTime.now());
 		activatePromoBean.setExpires(null);
+		activatePromoBean.setBusinessId(inactivePromo.getBusinessId());
 
 		activatePromotionBadRequest(activatePromoBean, "Dates must be specified and beginning date before expiry date");
 	}
@@ -199,6 +229,7 @@ public class PromoCrudApiImplIT extends AbstractIT {
 		activatePromoBean.setPromoCode(inactivePromo.getPromoCode());
 		activatePromoBean.setBegins(null);
 		activatePromoBean.setExpires(null);
+		activatePromoBean.setBusinessId(inactivePromo.getBusinessId());
 
 		activatePromotionBadRequest(activatePromoBean, "Dates must be specified and beginning date before expiry date");
 	}
@@ -211,6 +242,7 @@ public class PromoCrudApiImplIT extends AbstractIT {
 		activatePromoBean.setPromoCode(inactivePromo.getPromoCode());
 		activatePromoBean.setBegins(LocalDateTime.now());
 		activatePromoBean.setExpires(LocalDateTime.now().minusSeconds(1));
+		activatePromoBean.setBusinessId(inactivePromo.getBusinessId());
 
 		activatePromotionBadRequest(activatePromoBean, "Dates must be specified and beginning date before expiry date");
 	}
@@ -247,12 +279,12 @@ public class PromoCrudApiImplIT extends AbstractIT {
 		assertThat(responseBody)
 				.isNotNull()
 				.isEqualToComparingOnlyGivenFields(requestBody,
-						"name", "description", "promoCode", "begins", "expires");
+						"businessId", "name", "description", "promoCode", "begins", "expires");
 
 		assertThat(responseBody)
 				.isNotNull()
 				.isEqualToComparingOnlyGivenFields(promoDocument,
-						"id", "name", "description", "promoCode", "begins", "expires", "status");
+						"id", "businessId", "name", "description", "promoCode", "begins", "expires", "status");
 
 		assertThat(promoDocument.getStatus()).isEqualTo(status);
 		verifyKafkaPublishedAvailablePromo(promoDocument);
@@ -267,7 +299,7 @@ public class PromoCrudApiImplIT extends AbstractIT {
 			assertThat(promoDocument)
 					.isNotNull()
 					.isEqualToComparingOnlyGivenFields(polled,
-							"id", "name", "description", "promoCode", "begins", "expires", "status");
+							"id", "businessId", "name", "description", "promoCode", "begins", "expires", "status");
 		}
 	}
 
@@ -299,6 +331,8 @@ public class PromoCrudApiImplIT extends AbstractIT {
 	private PromoBean buildValidBrandNewPromoBean() {
 		return buildPromoBean("id", "status");
 	}
+
+
 
 	private PromoBean buildPromoBean(String... excludedFields) {
 		PromoBean random = random(PromoBean.class, excludedFields);

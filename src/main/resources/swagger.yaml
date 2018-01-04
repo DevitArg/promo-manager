@@ -81,8 +81,11 @@ definitions:
     - name
     - description
     - promoCode
+    - businessId
     properties:
       id:
+        type: string
+      businessId:
         type: string
       name:
         type: string
@@ -104,6 +107,8 @@ definitions:
     - promoCode
     properties:
       promoCode:
+        type: string
+      businessId:
         type: string
       begins:
         type: string

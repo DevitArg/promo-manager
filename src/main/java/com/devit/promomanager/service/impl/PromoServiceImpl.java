@@ -46,7 +46,8 @@ public class PromoServiceImpl implements PromoService {
 	private RetryTemplate retryTemplate;
 
 	@Override
-	public PromoBean createPromotion(PromoBean promoBean) throws InvalidDatesException, NullPromoBeanException, PromoCodeRegisteredException {
+	public PromoBean createPromotion(PromoBean promoBean) throws InvalidDatesException, NullPromoBeanException,
+			PromoCodeRegisteredException, InvalidBusinessException {
 		PromoBeanAdapter promoBeanAdapter = promoBeanAdapterFactory.getPromoBeanAdapter(promoBean);
 		PromoDocument promoDocument = dozerBeanMapper.map(promoBeanAdapter.getPromoBean(), PromoDocument.class);
 
@@ -61,8 +62,9 @@ public class PromoServiceImpl implements PromoService {
 
 	@Override
 	public void activatePromotion(ActivatePromoBean activatePromoBean) throws NotFoundException, PromoCodeAlreadyActiveException, InvalidDatesException {
-		PromoDocument promoDocument = promoRepository.findByPromoCode(activatePromoBean.getPromoCode())
-				.orElseThrow(() -> new NotFoundException("Provided promoCode has not been found it may not exist"));
+		// TODO: add business validation against business management service (?)
+		PromoDocument promoDocument = promoRepository.findByPromoCodeAndBusinessId(activatePromoBean.getPromoCode(), activatePromoBean.getBusinessId())
+				.orElseThrow(() -> new NotFoundException("Either the provided promoCode or businessId have not been found they may not exist"));
 
 		if (!promoDocument.getStatus().equals(PromoStatus.ACTIVE)) {
 			activationStrategyProvider.activatePromo(promoDocument, activatePromoBean);
