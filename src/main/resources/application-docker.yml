@@ -1,5 +1,0 @@
-mongo:
-  config:
-    uri: mongodb://promoManager:password@mongodb:27017/promoManager
-    type: INSTANCE
-    replicaSetName:

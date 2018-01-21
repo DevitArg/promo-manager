@@ -2,7 +2,18 @@ spring:
   kafka:
     producer:
       bootstrapServers: ${spring.kafka.bootstrapServers}
+      topic: promo_available
 
 mongo:
   config:
     type: EMBEDDED
+    retryProperties:
+      retryBackOffTime: 5000
+      retryMaxAttempts: 3
+
+cxf:
+  path: /promoManager/v1
+
+security:
+  basic:
+    enabled: false

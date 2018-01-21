@@ -1,4 +1,4 @@
-version: '2.1'
+version: '3'
 
 services:
     mongodb:
@@ -58,10 +58,16 @@ services:
         networks:
           - devit-network
         environment:
+          - eureka.client.serviceUrl.defaultZone=http://eureka:8761/eureka/
+          - spring.cloud.config.label=master
           - spring.profiles.active=docker
+          - USER_CONFIGURATION_SERVER=uservice
+          - PASSWORD_CONFIGURATION_SERVER=password
         links:
           - mongodb:mongodb
         depends_on:
+          - configuration-server
+          - eureka
           - mongodb
           - zookeeper
           - kafka

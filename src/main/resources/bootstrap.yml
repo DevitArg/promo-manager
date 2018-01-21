@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: promo-manager
+  cloud:
+    config:
+      failFast: true
+      retry:
+        max-attempts: 10000
+        max-interval: 1000
+      enabled: true
+      discovery:
+        enabled: true
+        serviceId: configuration-server
+eureka:
+  instance:
+    metadataMap:
+      username: ${USER_CONFIGURATION_SERVER}
+      password: ${PASSWORD_CONFIGURATION_SERVER}
