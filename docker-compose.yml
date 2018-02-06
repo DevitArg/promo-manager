@@ -68,6 +68,7 @@ services:
         depends_on:
           - configuration-server
           - eureka
+          - zuul
           - mongodb
           - zookeeper
           - kafka
