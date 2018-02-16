@@ -1,6 +1,7 @@
 package com.devit.promomanager.service.impl;
 
-import com.devit.promomanager.service.PromoBeanAdapterFactory;
+import com.devit.promomanager.api.clients.checkmein.api.WhoAreThereApi;
+import com.devit.promomanager.api.clients.checkmein.model.CheckInBean;
 import com.devit.promomanager.api.model.ActivatePromoBean;
 import com.devit.promomanager.api.model.PromoBean;
 import com.devit.promomanager.api.model.PromoBeanAdapter;
@@ -9,14 +10,21 @@ import com.devit.promomanager.exception.*;
 import com.devit.promomanager.kafka.KafkaTopicProperties;
 import com.devit.promomanager.persistense.document.PromoDocument;
 import com.devit.promomanager.persistense.repository.PromoRepository;
+import com.devit.promomanager.service.PromoBeanAdapterFactory;
 import com.devit.promomanager.service.PromoService;
 import com.devit.promomanager.service.activation.PromoActivationStrategyProvider;
+import com.devit.promomanager.servicetoservice.WebClientFactory;
 import org.dozer.DozerBeanMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Service;
+
+import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Lucas.Godoy on 21/11/17.
@@ -45,6 +53,9 @@ public class PromoServiceImpl implements PromoService {
 	@Autowired
 	private RetryTemplate retryTemplate;
 
+	@Autowired
+	private WebClientFactory webClientFactory;
+
 	@Override
 	public PromoBean createPromotion(PromoBean promoBean) throws InvalidDatesException, NullPromoBeanException,
 			PromoCodeRegisteredException, InvalidBusinessException {
@@ -53,9 +64,7 @@ public class PromoServiceImpl implements PromoService {
 
 		promoDocument = saveOrUpdatePromo(promoDocument);
 
-		if (PromoStatus.ACTIVE.equals(promoDocument.getStatus())) {
-			kafkaTemplate.send(kafkaTopicProperties.getTopic(), promoDocument);
-		}
+		notifyActivePromotion(promoDocument);
 
 		return dozerBeanMapper.map(promoDocument, PromoBean.class);
 	}
@@ -78,5 +87,19 @@ public class PromoServiceImpl implements PromoService {
 	private PromoDocument saveOrUpdatePromo(PromoDocument promoDocument) {
 		RetryCallback<PromoDocument, RuntimeException> retryCallback = context -> promoRepository.save(promoDocument);
 		return retryTemplate.execute(retryCallback);
+	}
+
+	private void notifyActivePromotion(PromoDocument promoDocument) {
+		if (PromoStatus.ACTIVE.equals(promoDocument.getStatus())) {
+			List<CheckInBean> users = new ArrayList<>();
+			WhoAreThereApi apiClient = (WhoAreThereApi) webClientFactory.get(WhoAreThereApi.class, "check-me-in");
+			Response response = apiClient.whoAreThere(promoDocument.getBusinessId());
+			if (response != null) {
+				users = response.readEntity(new GenericType<List<CheckInBean>>() {
+				});
+			}
+			users.forEach(u -> kafkaTemplate.send("sms-to-send", u));
+			kafkaTemplate.send(kafkaTopicProperties.getTopic(), promoDocument);
+		}
 	}
 }

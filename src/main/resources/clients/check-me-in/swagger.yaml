@@ -1,0 +1,140 @@
+swagger: '2.0'
+info:
+  description: CheckMeIn API
+  version: 1.0.0
+  title: CheckMeIn API
+  contact:
+    email: godoy.lucas.e@gmail.com
+
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+# tags are used for organizing operations
+tags:
+- name: checkMeIn
+  description: checking in/out table/business operations
+- name: whoAreThere
+  description: all users on a business operation
+
+paths:
+  /checkMe/in:
+    post:
+      tags:
+      - checkMeIn
+      summary: lets user check in on a business' table
+      operationId: userCheckin
+      description: lets user check in on a business' table
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: checkInBean
+        description: object that contains the info to check in users onto tables
+        schema:
+          $ref: '#/definitions/CheckInBean'
+      responses:
+        201:
+          description: user checked in
+          schema:
+            $ref: '#/definitions/CheckInBean'
+        400:
+          description: invalid input, object invalid
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        409:
+          description: user already checked in
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /checkMe/out/{checkInId}:
+    delete:
+      tags:
+      - checkMeIn
+      summary: lets users check out from business' table
+      operationId: userCheckOut
+      description: lets users check out from business' table
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: checkInId
+        in: path
+        description: User's checkIn ID to deregister
+        required: true
+        type: string
+      responses:
+        200:
+          description: user checked out
+          schema:
+            $ref: '#/definitions/CheckInBean'
+        400:
+          description: invalid input, object invalid
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        409:
+          description: user already checked in
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /whoAreThere/{businessId}:
+    get:
+      tags:
+      - whoAreThere
+      summary: retrieves all users checked in on a business
+      operationId: whoAreThere
+      description: retrieves all users checked in on a business
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: businessId
+        in: path
+        description: Business's ID to query
+        required: true
+        type: string
+      responses:
+        200:
+          description: these are the users that have been checked in
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CheckInBean'
+definitions:
+  CheckInBean:
+    type: object
+    required:
+    - userId
+    - tableId
+    - businessId
+    properties:
+      id:
+        type: string
+      userId:
+        type: string
+      tableId:
+        type: string
+      businessId:
+        type: string
+      checkInStatus:
+          $ref: '#/definitions/CheckInStatus'
+  CheckInStatus:
+    type: string
+    enum: [ CHECKEDIN, CHECKEDOUT ]
+  ErrorResponse:
+    type: object
+    properties:
+      httpStatus:
+        type: integer
+      message:
+        type: string
+      developerMessage:
+        type: string
+host: virtserver.swaggerhub.com
+schemes:
+ - https
+ - http
+# Added by API Auto Mocking Plugin
+basePath: "/checkMeIn/v1"

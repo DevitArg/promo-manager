@@ -1,0 +1,6 @@
+# Matches in same directory as .swagger-codegen-ignore as a shell glob
+
+# Matches all occurrences in all subdirectories
+**/*Impl.java
+**/*Exception.java
+**/*Swagger2SpringBoot.java

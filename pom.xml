@@ -196,6 +196,7 @@
                 <version>2.2.3</version>
                 <executions>
                     <execution>
+                        <id>api</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>
@@ -214,6 +215,28 @@
                                 <useBeanValidationFeature>true</useBeanValidationFeature>
                                 <useJaxbAnnotations>true</useJaxbAnnotations>
                                 <withXml>true</withXml>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>check-me-in-client</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>src/main/resources/clients/check-me-in/swagger.yaml</inputSpec>
+                            <ignoreFileOverride>src/main/resources/clients/check-me-in/.swagger-codegen-ignore</ignoreFileOverride>
+                            <language>jaxrs-cxf-client</language>
+                            <apiPackage>com.devit.promomanager.api.clients.checkmein.api</apiPackage>
+                            <modelPackage>com.devit.promomanager.api.clients.checkmein.model</modelPackage>
+                            <generateApiTests>false</generateApiTests>
+                            <configOptions>
+                                <sourceFolder>src/main/java</sourceFolder>
+                                <useGenericResponse>true</useGenericResponse>
+                                <dateLibrary>java8-localdatetime</dateLibrary>
+                                <useBeanValidation>true</useBeanValidation>
+                                <useBeanValidationFeature>true</useBeanValidationFeature>
                             </configOptions>
                         </configuration>
                     </execution>
